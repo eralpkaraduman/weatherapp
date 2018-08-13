@@ -1,8 +1,16 @@
 version: "3"
 
 services:
+
   weatherapp_backend:
     build: ./backend
     env_file: .env
     ports:
       - 9000:9000
+
+  weatherapp_frontend:
+    depends_on: 
+      - weatherapp_backend
+    build: ./frontend
+    ports:
+      - 8000:8000
