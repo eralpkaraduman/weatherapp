@@ -3,14 +3,22 @@ version: "3"
 services:
 
   weatherapp_backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     env_file: .env
     ports:
       - 9000:9000
+    volumes:
+      - ./backend:/usr/src/app:rw
 
   weatherapp_frontend:
     depends_on: 
       - weatherapp_backend
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
       - 8000:8000
+    volumes:
+      - ./frontend:/usr/src/app:rw
