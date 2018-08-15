@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const path = require('path');
 
 const TransferWebpackPlugin = require('transfer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -12,12 +13,13 @@ module.exports = {
     contentBase: 'src/public',
     historyApiFallback: true,
     port: 8000,
-		host: '0.0.0.0',
-		hot: true
+    host: '0.0.0.0',
+    hot: true,
   },
   devtool: 'eval',
   output: {
-    filename: 'index.jsx',
+    path: path.join(__dirname, 'dist'),
+    filename: '[name].[hash].js',
     publicPath: '/',
   },
   module: {
