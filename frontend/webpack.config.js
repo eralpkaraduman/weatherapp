@@ -33,7 +33,7 @@ module.exports = {
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: 'src/public/index.html' }),
+    new HtmlWebpackPlugin({ template: 'src/index.html', inject: true }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new TransferWebpackPlugin([
