@@ -11,6 +11,7 @@ services:
       - 9000:9000
     volumes:
       - ./backend:/usr/src/app:rw
+      - /usr/src/app/node_modules
 
   weatherapp_frontend:
     depends_on: 
@@ -22,3 +23,4 @@ services:
       - 8000:8000
     volumes:
       - ./frontend:/usr/src/app:rw
+      - /usr/src/app/node_modules
