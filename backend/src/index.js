@@ -12,7 +12,7 @@ const mapURI = process.env.MAP_ENDPOINT || 'http://api.openweathermap.org/data/2
 const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || '').split(',');
 console.log(`corsAllowedOrigins: "${corsAllowedOrigins}"`);
 
-const targetCity = process.env.TARGET_CITY || 'Helsinki,fi';
+const defaultTargetCity = process.env.TARGET_CITY || 'Helsinki,fi';
 
 const port = process.env.PORT || 9000;
 
@@ -27,18 +27,45 @@ function verifyOrigin (ctx) {
 
 app.use(cors(verifyOrigin));
 
-const fetchWeather = async () => {
+const fetchCurrentWeather = async (targetCity) => {
   const endpoint = `${mapURI}/weather?q=${targetCity}&appid=${appId}&`;
   const response = await fetch(endpoint);
 
   return response ? response.json() : {};
 };
 
+const fetchForecastWeather = async (targetCity) => {
+  const endpoint = `${mapURI}/forecast?q=${targetCity}&appid=${appId}&`;
+  const response = await fetch(endpoint);
+
+  return response ? response.json() : {};
+};
+
 router.get('/api/weather', async ctx => {
-  const weatherData = await fetchWeather();
+  const targetCity = defaultTargetCity; // TODO: Get from request parameters
+  debug(`Fetching weather (${targetCity})...`);
+  
+  const currentWeatherData = await fetchCurrentWeather(targetCity);
+  const current = currentWeatherData.weather ? currentWeatherData.weather[0] : {};
+  debug(`Current weather (${targetCity}): ${JSON.stringify(current)}`);
+  const city = currentWeatherData.name;
+  const country = currentWeatherData.sys && currentWeatherData.sys.country;
+
+  const forecastWeatherData = await fetchCurrentWeather(targetCity);
+  const forecastWeather = forecastWeatherData.weather ? forecastWeatherData.weather[0] : {};
+  debug(`Forecast weather (${targetCity}): ${JSON.stringify(forecastWeather)}`);
+
   ctx.type = 'application/json; charset=utf-8';
-  debug(weatherData);
-  ctx.body = weatherData.weather ? weatherData.weather[0] : {};
+  ctx.body = {
+    city,
+    country,
+    weather: {
+      current,
+      forecast: {
+        forecastWeather
+      }
+    }
+  };
 });
 
 app.use(router.routes());
