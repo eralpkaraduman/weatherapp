@@ -5,6 +5,7 @@ class CurrentWeather extends Component {
 
   static countryCodeToEmoji(countryCode) {
     if (countryCode && countryCode.length > 0) {
+      // Based On: https://binarypassion.net/lets-turn-an-iso-country-code-into-a-unicode-emoji-shall-we-870c16e05aad
       return countryCode
         .toUpperCase()
         .replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397));
