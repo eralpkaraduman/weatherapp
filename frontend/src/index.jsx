@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import CurrentWeather from './components/CurrentWeather';
+
 const baseURL = process.env.ENDPOINT;
 
 const getWeatherFromApi = async () => {
@@ -20,21 +22,47 @@ class Weather extends React.Component {
     super(props);
 
     this.state = {
-      icon: '',
+      pending: false,
+      currentWeather: null,
+      city: '',
+      country: '',
     };
   }
 
   async componentWillMount() {
-    const weather = await getWeatherFromApi();
-    this.setState({ icon: weather.icon.slice(0, -1) });
+    this.setState({ pending: true });
+    const weatherResponse = await getWeatherFromApi();
+    this.setState({ pending: false });
+
+    const { weather, city, country } = weatherResponse;
+
+    this.setState({
+      city,
+      country,
+      currentWeather: weather.current,
+    });
   }
 
   render() {
-    const { icon } = this.state;
+    const {
+      pending,
+      city, country,
+      currentWeather,
+    } = this.state;
+
+    if (pending) {
+      return <h1>Loading...</h1>;
+    }
 
     return (
-      <div className="icon">
-        { icon && <img src={`/img/${icon}.svg`} alt="weather-icon" /> }
+      <div className="container">
+        { currentWeather &&
+          <CurrentWeather
+            weatherIcon={currentWeather.icon}
+            country={country}
+            city={city}
+          />
+        }
       </div>
     );
   }

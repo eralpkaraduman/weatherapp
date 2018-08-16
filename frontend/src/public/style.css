@@ -12,3 +12,10 @@ body{
   width: 30vw;
   height: 30vw;
 }
+
+.container, .current-weather {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
