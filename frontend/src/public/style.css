@@ -1,27 +1,60 @@
-body{
-  overflow: hidden;
+body {
+  overflow-x: hidden;
+  overflow-y: scroll;
   position: absolute;
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: top;
 }
 
 .icon {
-  width: 30vw;
-  height: 30vw;
+  width: 24vw;
+  height: 24vw;
 }
 
-.weather-display, .container, .current-weather {
+.forecast-list, .weather-display, .container, .current-weather {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  text-align: center;
+}
+
+.forecast-weather {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 2rem;
 }
 
 .temp {
   margin-top: 5px;
-  font-weight: bold;
   font-size: 2rem;
+  margin: 0px;
+  padding: 0px;
+}
+
+h1 {
+  font-size: 4rem;
+  margin: 0px;
+  padding: 0px;
+}
+
+h2 {
+  font-size: 3rem;
+  margin: 0px;
+  padding: 0px;
+}
+
+h3 {
+  font-size: 2rem;
+  margin: 0px;
+  padding: 0px;
+}
+
+.forecast-title {
+  margin-top: 4rem;
 }

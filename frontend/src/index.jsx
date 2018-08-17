@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import CurrentWeather from './components/CurrentWeather';
+import ForecastWeather from './components/ForecastWeather';
 
 const baseURL = process.env.ENDPOINT;
 
@@ -28,6 +29,7 @@ class Weather extends React.Component {
       city: '',
       country: '',
       units: '',
+      forecasts: [],
     };
   }
 
@@ -44,6 +46,7 @@ class Weather extends React.Component {
       units,
       currentWeather: weather.current.weather,
       currentTemp: weather.current.temp,
+      forecasts: weather.forecasts,
     });
   }
 
@@ -51,8 +54,8 @@ class Weather extends React.Component {
     const {
       pending,
       city, country, units,
-      currentWeather,
-      currentTemp,
+      currentWeather, currentTemp,
+      forecasts,
     } = this.state;
 
     if (pending) {
@@ -70,6 +73,19 @@ class Weather extends React.Component {
             temp={currentTemp}
           />
         }
+        <h2 className="forecast-title">Forecast</h2>
+        <div className="forecast-list">
+          {
+            forecasts.map(({ dt, weather, temp }) => (
+              <ForecastWeather
+                dateTime={dt}
+                weatherIcon={weather.icon}
+                units={units}
+                temp={temp}
+              />
+            )
+          )}
+        </div>
       </div>
     );
   }

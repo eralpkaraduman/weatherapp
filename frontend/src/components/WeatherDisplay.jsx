@@ -25,7 +25,7 @@ class WeatherDisplay extends Component {
             />
           }
         </div>
-        <div className="temp">{ `${temp}${tempMetricSymbol}` }</div>
+        <h3 className="temp">{ `${temp}${tempMetricSymbol}` }</h3>
       </div>
     );
   }
