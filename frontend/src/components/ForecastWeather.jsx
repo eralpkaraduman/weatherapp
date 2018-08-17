@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
+
 import WeatherDisplay from './WeatherDisplay';
 
 class ForecastWeather extends Component {
@@ -9,9 +11,10 @@ class ForecastWeather extends Component {
 
   render() {
     const { dateTime, weatherIcon, units, temp } = this.props;
+    const humanReadableDateTime = moment.unix(dateTime).calendar();
     return (
       <div className="forecast-weather">
-        <h3>{ `${dateTime}` }</h3>
+        <h3>{ humanReadableDateTime }</h3>
         <WeatherDisplay
           weatherIcon={weatherIcon}
           units={units}
