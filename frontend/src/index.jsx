@@ -24,8 +24,10 @@ class Weather extends React.Component {
     this.state = {
       pending: false,
       currentWeather: null,
+      currentTemp: null,
       city: '',
       country: '',
+      units: '',
     };
   }
 
@@ -34,20 +36,23 @@ class Weather extends React.Component {
     const weatherResponse = await getWeatherFromApi();
     this.setState({ pending: false });
 
-    const { weather, city, country } = weatherResponse;
+    const { weather, city, country, units } = weatherResponse;
 
     this.setState({
       city,
       country,
+      units,
       currentWeather: weather.current.weather,
+      currentTemp: weather.current.temp,
     });
   }
 
   render() {
     const {
       pending,
-      city, country,
+      city, country, units,
       currentWeather,
+      currentTemp,
     } = this.state;
 
     if (pending) {
@@ -56,11 +61,13 @@ class Weather extends React.Component {
 
     return (
       <div className="container">
-        { currentWeather &&
+        { currentWeather && currentTemp &&
           <CurrentWeather
             weatherIcon={currentWeather.icon}
             country={country}
             city={city}
+            units={units}
+            temp={currentTemp}
           />
         }
       </div>

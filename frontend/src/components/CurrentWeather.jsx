@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+const unitTempSymbols = {
+  metric: '°C',
+  imperial: '°F',
+  kelvin: '°K',
+};
+
 class CurrentWeather extends Component {
 
   static countryCodeToEmoji(countryCode) {
@@ -15,18 +21,22 @@ class CurrentWeather extends Component {
   }
 
   render() {
-    const { city, country, weatherIcon } = this.props;
+    const { city, country, weatherIcon, units, temp } = this.props;
     const countryFlagEmoji = CurrentWeather.countryCodeToEmoji(country);
+    const tempMetricSymbol = unitTempSymbols[units] || '';
     return (
       <div className="current-weather">
         <h1>{ `Weather in ${city} ${countryFlagEmoji}` }</h1>
-        <div className="icon">
-          { weatherIcon &&
-            <img
-              src={`/img/${weatherIcon.slice(0, -1)}.svg`}
-              alt="current-weather-icon"
-            />
-          }
+        <div className="weather-display">
+          <div className="icon">
+            { weatherIcon &&
+              <img
+                src={`/img/${weatherIcon.slice(0, -1)}.svg`}
+                alt="current-weather-icon"
+              />
+            }
+          </div>
+          <div className="temp">{ `${temp}${tempMetricSymbol}` }</div>
         </div>
       </div>
     );
@@ -37,6 +47,8 @@ CurrentWeather.propTypes = {
   weatherIcon: PropTypes.string.isRequired,
   country: PropTypes.string.isRequired,
   city: PropTypes.string.isRequired,
+  units: PropTypes.string.isRequired,
+  temp: PropTypes.number.isRequired,
 };
 
 export default CurrentWeather;
