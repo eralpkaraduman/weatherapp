@@ -6,9 +6,35 @@ import ForecastWeather from './components/ForecastWeather';
 
 const baseURL = process.env.ENDPOINT;
 
-const getWeatherFromApi = async () => {
+const getWeatherFromApi = async (latitude, longitude, city = null, units = null) => {
+  let path = `${baseURL}/weather`;
+
+  const queryParams = [];
+
+  if (latitude) {
+    queryParams.push(`latitude=${latitude}`);
+  }
+
+  if (longitude) {
+    queryParams.push(`longitude=${longitude}`);
+  }
+
+  if (city) {
+    queryParams.push(`city=${city}`);
+  }
+
+  if (units) {
+    queryParams.push(`units=${units}`);
+  }
+
+  const queryString = queryParams.join('&');
+
+  if (queryString.length > 0) {
+    path = `${path}?${queryString}`;
+  }
+
   try {
-    const response = await fetch(`${baseURL}/weather`);
+    const response = await fetch(path);
     return response.json();
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -30,12 +56,39 @@ class Weather extends React.Component {
       country: '',
       units: '',
       forecasts: [],
+      browserGeolocationPosition: null,
     };
   }
 
   async componentWillMount() {
+    this.updateWeatherData();
+  }
+
+  componentDidMount() {
+    // Attempt to update with browser geolocation 3 seconds later
+    setTimeout(() => {
+      // eslint-disable-next-line no-undef
+      if ('geolocation' in navigator) {
+        // eslint-disable-next-line no-undef
+        navigator.geolocation.getCurrentPosition((position) => {
+          this.setState({ browserGeolocationPosition: position });
+        });
+      }
+    }, 3000);
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+    const { browserGeolocationPosition } = this.state;
+    if (browserGeolocationPosition && browserGeolocationPosition.coords &&
+      prevState.browserGeolocationPosition !== browserGeolocationPosition) {
+      const { latitude, longitude } = browserGeolocationPosition.coords;
+      this.updateWeatherData(latitude, longitude);
+    }
+  }
+
+  async updateWeatherData(latitude = null, longitude = null) {
     this.setState({ pending: true });
-    const weatherResponse = await getWeatherFromApi();
+    const weatherResponse = await getWeatherFromApi(latitude, longitude);
     this.setState({ pending: false });
 
     const { weather, city, country, units } = weatherResponse;
