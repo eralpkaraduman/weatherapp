@@ -1,14 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
-const unitTempSymbols = {
-  metric: '°C',
-  imperial: '°F',
-  kelvin: '°K',
-};
+import WeatherDisplay from './WeatherDisplay';
 
 class CurrentWeather extends Component {
-
   static countryCodeToEmoji(countryCode) {
     if (countryCode && countryCode.length > 0) {
       // Based On: https://binarypassion.net/lets-turn-an-iso-country-code-into-a-unicode-emoji-shall-we-870c16e05aad
@@ -23,21 +17,14 @@ class CurrentWeather extends Component {
   render() {
     const { city, country, weatherIcon, units, temp } = this.props;
     const countryFlagEmoji = CurrentWeather.countryCodeToEmoji(country);
-    const tempMetricSymbol = unitTempSymbols[units] || '';
     return (
       <div className="current-weather">
         <h1>{ `Weather in ${city} ${countryFlagEmoji}` }</h1>
-        <div className="weather-display">
-          <div className="icon">
-            { weatherIcon &&
-              <img
-                src={`/img/${weatherIcon.slice(0, -1)}.svg`}
-                alt="current-weather-icon"
-              />
-            }
-          </div>
-          <div className="temp">{ `${temp}${tempMetricSymbol}` }</div>
-        </div>
+        <WeatherDisplay
+          weatherIcon={weatherIcon}
+          units={units}
+          temp={temp}
+        />
       </div>
     );
   }
