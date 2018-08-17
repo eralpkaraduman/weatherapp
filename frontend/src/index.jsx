@@ -78,6 +78,7 @@ class Weather extends React.Component {
           {
             forecasts.map(({ dt, weather, temp }) => (
               <ForecastWeather
+                key={`forecast-${dt}`}
                 dateTime={dt}
                 weatherIcon={weather.icon}
                 units={units}
