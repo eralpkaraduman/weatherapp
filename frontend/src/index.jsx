@@ -39,7 +39,7 @@ class Weather extends React.Component {
     this.setState({
       city,
       country,
-      currentWeather: weather.current,
+      currentWeather: weather.current.weather,
     });
   }
 
