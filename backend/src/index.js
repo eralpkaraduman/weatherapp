@@ -62,8 +62,8 @@ router.get('/api/weather', async ctx => {
 
   const weatherForecastData = await fetchWeatherForecast(targetCity, units);
 
-  // Get first 3 forecasts
-  const forecasts = (weatherForecastData.list || []).slice(0, 3).map(forecast => ({
+  // Get first 5 forecasts
+  const forecasts = (weatherForecastData.list || []).slice(0, 5).map(forecast => ({
     dt: forecast.dt,
     weather: forecast.weather ? forecast.weather[0] : {},
     temp: forecast.main && forecast.main.temp,
