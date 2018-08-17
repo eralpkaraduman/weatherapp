@@ -27,44 +27,62 @@ function verifyOrigin (ctx) {
 
 app.use(cors(verifyOrigin));
 
-const fetchCurrentWeather = async (targetCity) => {
-  const endpoint = `${mapURI}/weather?q=${targetCity}&appid=${appId}&`;
+const fetchWeather = async (targetCity, units) => {
+  const endpoint = `${mapURI}/weather?q=${targetCity}&appid=${appId}&units=${units}`;
   const response = await fetch(endpoint);
 
   return response ? response.json() : {};
 };
 
-const fetchForecastWeather = async (targetCity) => {
-  const endpoint = `${mapURI}/forecast?q=${targetCity}&appid=${appId}&`;
+const fetchWeatherForecast = async (targetCity, units) => {
+  const endpoint = `${mapURI}/forecast?q=${targetCity}&appid=${appId}&units=${units}`;
   const response = await fetch(endpoint);
 
   return response ? response.json() : {};
 };
 
 router.get('/api/weather', async ctx => {
-  const targetCity = defaultTargetCity; // TODO: Get from request parameters
+  const targetCity = ctx.query.city || defaultTargetCity;
+  const units = ctx.query.units || 'metric';
   debug(`Fetching weather (${targetCity})...`);
-  
-  const currentWeatherData = await fetchCurrentWeather(targetCity);
-  const current = currentWeatherData.weather ? currentWeatherData.weather[0] : {};
-  debug(`Current weather (${targetCity}): ${JSON.stringify(current)}`);
+
+  const currentWeatherData = await fetchWeather(targetCity, units);
+
+  const currentWeather = currentWeatherData.weather ? currentWeatherData.weather[0] : {};
+  debug(`Current weather (${targetCity}): ${JSON.stringify(currentWeather)}`);
+
+  const currentTemp = currentWeatherData.main && currentWeatherData.main.temp;
+  debug(`Current temp (${targetCity}): ${currentTemp}`);
+
   const city = currentWeatherData.name;
   const country = currentWeatherData.sys && currentWeatherData.sys.country;
 
-  const forecastWeatherData = await fetchCurrentWeather(targetCity);
-  const forecastWeather = forecastWeatherData.weather ? forecastWeatherData.weather[0] : {};
-  debug(`Forecast weather (${targetCity}): ${JSON.stringify(forecastWeather)}`);
+  debug(`City (${targetCity}): ${city}`);
+  debug(`Country (${targetCity}): ${country}`);
+
+  const weatherForecastData = await fetchWeatherForecast(targetCity, units);
+
+  // Get first 3 forecasts
+  const forecasts = (weatherForecastData.list || []).slice(0, 3).map(forecast => ({
+    dt: forecast.dt,
+    weather: forecast.weather ? forecast.weather[0] : {},
+    temp: forecast.main && forecast.main.temp,
+  }));
+
+  debug(`Weather forecasts (${targetCity}): ${JSON.stringify(forecasts)}`);
 
   ctx.type = 'application/json; charset=utf-8';
   ctx.body = {
     city,
     country,
+    units,
     weather: {
-      current,
-      forecast: {
-        forecastWeather
-      }
-    }
+      current: {
+        weather: currentWeather,
+        temp: currentTemp,
+      },
+      forecasts,
+    },
   };
 });
 
