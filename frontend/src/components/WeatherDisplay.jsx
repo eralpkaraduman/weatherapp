@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
-const unitTempSymbols = {
-  metric: '°C',
-  imperial: '°F',
-  kelvin: '°K',
-};
+import constants from './constants';
 
 class WeatherDisplay extends Component {
   componentDidMount() {
@@ -14,7 +9,7 @@ class WeatherDisplay extends Component {
 
   render() {
     const { weatherIcon, units, temp } = this.props;
-    const tempMetricSymbol = unitTempSymbols[units] || '';
+    const tempMetricSymbol = constants.unitTempSymbols[units] || '';
     return (
       <div className="weather-display">
         <div className="icon">

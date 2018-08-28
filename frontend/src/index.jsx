@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import API from './API';
 import CurrentWeather from './components/CurrentWeather';
 import ForecastWeather from './components/ForecastWeather';
+import TemperatureUnitSelector from './components/TemperatureUnitSelector';
 
 class Weather extends React.Component {
   constructor(props) {
@@ -17,7 +18,7 @@ class Weather extends React.Component {
       currentTemp: null,
       city: '',
       country: '',
-      units: '',
+      units: null,
       forecasts: [],
       browserGeolocationPosition: null,
     };
@@ -29,11 +30,13 @@ class Weather extends React.Component {
   }
 
   async componentDidUpdate(prevProps, prevState) {
-    const { browserGeolocationPosition } = this.state;
-    if (browserGeolocationPosition && browserGeolocationPosition.coords &&
-      prevState.browserGeolocationPosition !== browserGeolocationPosition) {
-      const { latitude, longitude } = browserGeolocationPosition.coords;
-      this.updateWeatherData(latitude, longitude);
+    const { browserGeolocationPosition, units } = this.state;
+    const unitsChanged = units && prevState.units !== units;
+    const geolocationChanged = browserGeolocationPosition && browserGeolocationPosition.coords
+      && prevState.browserGeolocationPosition !== browserGeolocationPosition;
+
+    if (geolocationChanged || unitsChanged) {
+      this.updateWeatherData();
     }
   }
 
@@ -47,29 +50,37 @@ class Weather extends React.Component {
     }, delay);
   }
 
-  async updateWeatherData(latitude = null, longitude = null) {
+  async updateWeatherData() {
+    const { units, browserGeolocationPosition } = this.state;
+
     this.setState({ pending: true });
 
     let weatherResponse = null;
     try {
-      weatherResponse = await API.getWeather(latitude, longitude);
+      const coords = browserGeolocationPosition && browserGeolocationPosition.coords;
+      weatherResponse = await API.getWeather(
+        coords && coords.latitude,
+        coords && coords.longitude,
+        null,
+        units
+      );
     } catch (error) {
       console.error(error); // eslint-disable-line no-console
       this.setState({ pending: false, failed: true, errorMessage: error });
     }
 
     if (weatherResponse) {
-      this.setState({ pending: false, failed: false, errorMessage: null });
-
-      const { weather, city, country, units } = weatherResponse;
-
       this.setState({
-        city,
-        country,
-        units,
-        currentWeather: weather.current.weather,
-        currentTemp: weather.current.temp,
-        forecasts: weather.forecasts,
+        pending: false,
+        failed: false,
+        errorMessage: null,
+
+        city: weatherResponse.city,
+        country: weatherResponse.country,
+        units: weatherResponse.units,
+        currentWeather: weatherResponse.weather.current.weather,
+        currentTemp: weatherResponse.weather.current.temp,
+        forecasts: weatherResponse.weather.forecasts,
       });
     }
   }
@@ -85,7 +96,7 @@ class Weather extends React.Component {
     if (pending) {
       return (
         <div className="container">
-          <h1>Loading...</h1>;
+          <h1>Loading...</h1>
         </div>
       );
     }
@@ -101,21 +112,22 @@ class Weather extends React.Component {
 
     return (
       <div className="container">
-        { currentWeather && currentTemp &&
-          <CurrentWeather
-            weatherIcon={currentWeather.icon}
-            country={country}
-            city={city}
-            units={units}
-            temp={currentTemp}
-          />
-        }
+        <TemperatureUnitSelector
+          selectedUnit={units}
+          onUnitSelected={newUnit => this.setState({ units: newUnit })}
+        />
+        <CurrentWeather
+          weatherIcon={currentWeather.icon}
+          country={country}
+          city={city}
+          units={units}
+          temp={currentTemp}
+        />
         { forecasts.length > 0 &&
           <h2 className="forecast-title">Forecast</h2>
         }
         <div className="forecast-list">
-          {
-            forecasts.map(({ dt, weather, temp }) => (
+          {forecasts.map(({ dt, weather, temp }) => (
               <ForecastWeather
                 key={`forecast-${dt}`}
                 dateTime={dt}
@@ -123,8 +135,7 @@ class Weather extends React.Component {
                 units={units}
                 temp={temp}
               />
-            )
-          )}
+          ))}
         </div>
       </div>
     );
