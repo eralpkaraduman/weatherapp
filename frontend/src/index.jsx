@@ -1,48 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import API from './API';
 import CurrentWeather from './components/CurrentWeather';
 import ForecastWeather from './components/ForecastWeather';
-
-const baseURL = process.env.ENDPOINT;
-
-const getWeatherFromApi = async (latitude, longitude, city = null, units = null) => {
-  let path = `${baseURL}/weather`;
-
-  const queryParams = [];
-
-  if (latitude) {
-    queryParams.push(`latitude=${latitude}`);
-  }
-
-  if (longitude) {
-    queryParams.push(`longitude=${longitude}`);
-  }
-
-  if (city) {
-    queryParams.push(`city=${city}`);
-  }
-
-  if (units) {
-    queryParams.push(`units=${units}`);
-  }
-
-  const queryString = queryParams.join('&');
-
-  if (queryString.length > 0) {
-    path = `${path}?${queryString}`;
-  }
-
-  try {
-    const response = await fetch(path);
-    return response.json();
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
-  }
-
-  return {};
-};
 
 class Weather extends React.Component {
   constructor(props) {
@@ -50,6 +11,8 @@ class Weather extends React.Component {
 
     this.state = {
       pending: false,
+      failed: false,
+      errorMessage: null,
       currentWeather: null,
       currentTemp: null,
       city: '',
@@ -62,19 +25,7 @@ class Weather extends React.Component {
 
   async componentWillMount() {
     this.updateWeatherData();
-  }
-
-  componentDidMount() {
-    // Attempt to update with browser geolocation 3 seconds later
-    setTimeout(() => {
-      // eslint-disable-next-line no-undef
-      if ('geolocation' in navigator) {
-        // eslint-disable-next-line no-undef
-        navigator.geolocation.getCurrentPosition((position) => {
-          this.setState({ browserGeolocationPosition: position });
-        });
-      }
-    }, 3000);
+    this.checkGeolocation();
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -86,33 +37,66 @@ class Weather extends React.Component {
     }
   }
 
+  checkGeolocation(delay = 2000) {
+    setTimeout(() => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          this.setState({ browserGeolocationPosition: position });
+        });
+      }
+    }, delay);
+  }
+
   async updateWeatherData(latitude = null, longitude = null) {
     this.setState({ pending: true });
-    const weatherResponse = await getWeatherFromApi(latitude, longitude);
-    this.setState({ pending: false });
 
-    const { weather, city, country, units } = weatherResponse;
+    let weatherResponse = null;
+    try {
+      weatherResponse = await API.getWeather(latitude, longitude);
+    } catch (error) {
+      console.error(error); // eslint-disable-line no-console
+      this.setState({ pending: false, failed: true, errorMessage: error });
+    }
 
-    this.setState({
-      city,
-      country,
-      units,
-      currentWeather: weather.current.weather,
-      currentTemp: weather.current.temp,
-      forecasts: weather.forecasts,
-    });
+    if (weatherResponse) {
+      this.setState({ pending: false, failed: false, errorMessage: null });
+
+      const { weather, city, country, units } = weatherResponse;
+
+      this.setState({
+        city,
+        country,
+        units,
+        currentWeather: weather.current.weather,
+        currentTemp: weather.current.temp,
+        forecasts: weather.forecasts,
+      });
+    }
   }
 
   render() {
     const {
-      pending,
+      pending, failed, errorMessage,
       city, country, units,
       currentWeather, currentTemp,
       forecasts,
     } = this.state;
 
     if (pending) {
-      return <h1>Loading...</h1>;
+      return (
+        <div className="container">
+          <h1>Loading...</h1>;
+        </div>
+      );
+    }
+
+    if (failed) {
+      return (
+        <div className="container">
+          <h1>Error</h1>;
+          <h2>{errorMessage || 'Unknown Error'}</h2>
+        </div>
+      );
     }
 
     return (
@@ -126,7 +110,9 @@ class Weather extends React.Component {
             temp={currentTemp}
           />
         }
-        <h2 className="forecast-title">Forecast</h2>
+        { forecasts.length > 0 &&
+          <h2 className="forecast-title">Forecast</h2>
+        }
         <div className="forecast-list">
           {
             forecasts.map(({ dt, weather, temp }) => (
