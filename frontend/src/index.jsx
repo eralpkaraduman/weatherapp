@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+import 'whatwg-fetch';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -24,12 +26,12 @@ class Weather extends React.Component {
     };
   }
 
-  async componentWillMount() {
+  componentWillMount() {
     this.updateWeatherData();
     this.checkGeolocation();
   }
 
-  async componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const { browserGeolocationPosition, units } = this.state;
     const unitsChanged = units && prevState.units !== units;
     const geolocationChanged = browserGeolocationPosition && browserGeolocationPosition.coords
@@ -66,7 +68,8 @@ class Weather extends React.Component {
       );
     } catch (error) {
       console.error(error); // eslint-disable-line no-console
-      this.setState({ pending: false, failed: true, errorMessage: error });
+      const errorMessage = (error.message || error).toString();
+      this.setState({ pending: false, failed: true, errorMessage });
     }
 
     if (weatherResponse) {
